@@ -30,6 +30,6 @@
 
 	header('Content-type: application/javascript');
 ?>
-
 var MUSICIAN_DOWNLOAD_URL = '<?php echo $url ?>';
 var MUSICIAN_VERSION = '<?php echo $version ?>';
+setMusicianVersion && setMusicianVersion(MUSICIAN_VERSION, MUSICIAN_DOWNLOAD_URL);
