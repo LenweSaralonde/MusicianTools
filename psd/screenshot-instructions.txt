@@ -1,0 +1,13 @@
+Screenshot for CurseForge
+-------------------------
+
+/script local tex=MusicianFrame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
+
+/script local tex2=MusicianFrame:CreateTexture(nil, "BACKGROUND", nil, 1); tex2:SetColorTexture(1, 1, 1, 1); tex2:SetPoint("BOTTOMLEFT", -30, -30); tex2:SetPoint("TOPRIGHT", 30, 30);
+
+Screenshot for web converter
+----------------------------
+
+Set interface scale to "High"
+
+/script local tex2=MusicianFrame:CreateTexture(nil, "BACKGROUND", nil, 1); tex2:SetColorTexture(.1, .1, .1, 1); tex2:SetPoint("BOTTOMLEFT", -50, -50); tex2:SetPoint("TOPRIGHT", 50, 50); MusicianFrame:SetPoint("TOPLEFT", 50, -50)
