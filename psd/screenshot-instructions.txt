@@ -1,13 +1,19 @@
 Screenshot for CurseForge
 -------------------------
 
-/script local tex=MusicianFrame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
+Main Window
 
-/script local tex2=MusicianFrame:CreateTexture(nil, "BACKGROUND", nil, 1); tex2:SetColorTexture(1, 1, 1, 1); tex2:SetPoint("BOTTOMLEFT", -30, -30); tex2:SetPoint("TOPRIGHT", 30, 30);
+/script local frame = MusicianFrame; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
+/script local frame = MusicianFrame; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(1, 1, 1, 1); tex:SetPoint("BOTTOMLEFT", -20, -20); tex:SetPoint("TOPRIGHT", 20, 20); frame:SetPoint("TOPLEFT", 20, -20)
+
+Track editor
+
+/script local frame = MusicianTrackEditor; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
+/script local frame = MusicianTrackEditor; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(1, 1, 1, 1); tex:SetPoint("BOTTOMLEFT", -20, -20); tex:SetPoint("TOPRIGHT", 20, 20); frame:SetPoint("TOPLEFT", 20, -20)
 
 Screenshot for web converter
 ----------------------------
 
 Set interface scale to "High"
 
-/script local tex2=MusicianFrame:CreateTexture(nil, "BACKGROUND", nil, 1); tex2:SetColorTexture(.1, .1, .1, 1); tex2:SetPoint("BOTTOMLEFT", -50, -50); tex2:SetPoint("TOPRIGHT", 50, 50); MusicianFrame:SetPoint("TOPLEFT", 50, -50)
+/script local frame = MusicianFrame; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", -50, -50); tex:SetPoint("TOPRIGHT", 50, 50); frame:SetPoint("TOPLEFT", 50, -50)
