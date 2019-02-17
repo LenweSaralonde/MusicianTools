@@ -15,5 +15,6 @@ Screenshot for web converter
 ----------------------------
 
 Set interface scale to "High"
+Move frame to the upper left corner
 
-/script local frame = MusicianFrame; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", -50, -50); tex:SetPoint("TOPRIGHT", 50, 50); frame:SetPoint("TOPLEFT", 50, -50)
+/script local frame = MusicianFrame; frame:SetPoint("TOPLEFT", 50, -50); local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", -50, -50); tex:SetPoint("TOPRIGHT", 50, 50);
