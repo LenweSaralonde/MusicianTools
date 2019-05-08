@@ -1,0 +1,35 @@
+How to create demo songs that won't be fucked by the CurseForge packager
+
+1. Save the demo songs you want in MusicianList
+2. Run the following code:
+
+	function MusicianList.ConvertDemoSongs()
+
+		MusicianList_Storage.demoSongs = Musician.Utils.DeepCopy(MusicianList_Storage.data)
+
+		local id, song
+		for id, song in pairs(MusicianList_Storage.data) do
+			MusicianList_Storage.demoSongs[id].chunks = {}
+
+			local chunk, i, c
+			for i, chunk in pairs(song.chunks) do
+				local str = ""
+
+				while string.len(chunk) > 0 do
+					str = str .. '\\' .. string.byte(string.sub(chunk, 1, 1))
+					chunk = string.sub(chunk, 2)
+				end
+
+				table.insert(MusicianList_Storage.demoSongs[id].chunks, str)
+			end
+		end
+	end
+
+	MusicianList.ConvertDemoSongs()
+
+3. Reload UI
+4. Copy paste generated code from MusicianList_Storage.demoSongs in SavedVariables/MusicianList.lua into the MusicianList.Constants.lua file
+5. Replace "\\" by "\" in MusicianList.Constants.lua
+6. Run
+	/run MusicianList_Storage.demoSongs = nil
+	/reload
