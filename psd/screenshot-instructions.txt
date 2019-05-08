@@ -1,6 +1,8 @@
 Screenshot for CurseForge
 -------------------------
 
+=> Move frame to the upper left corner
+
 Main Window
 
 /script local frame = MusicianFrame; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
@@ -10,6 +12,11 @@ Track editor
 
 /script local frame = MusicianTrackEditor; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
 /script local frame = MusicianTrackEditor; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(1, 1, 1, 1); tex:SetPoint("BOTTOMLEFT", -20, -20); tex:SetPoint("TOPRIGHT", 20, 20); frame:SetPoint("TOPLEFT", 20, -20)
+
+Keyboard
+
+/script local frame = MusicianKeyboard; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 2); tex:SetColorTexture(.1, .1, .1, 1); tex:SetPoint("BOTTOMLEFT", 10, 10); tex:SetPoint("TOPRIGHT", -10, -10);
+/script local frame = MusicianKeyboard; local tex = frame:CreateTexture(nil, "BACKGROUND", nil, 1); tex:SetColorTexture(1, 1, 1, 1); tex:SetPoint("BOTTOMLEFT", -20, -20); tex:SetPoint("TOPRIGHT", 20, 20); frame:SetPoint("TOPLEFT", 20, -20)
 
 Screenshot for web converter
 ----------------------------
