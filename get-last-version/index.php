@@ -2,31 +2,30 @@
 	// Retrieve the latest version of the addon
 	// Returns s JS file to be included in the MIDI converter
 
-	define('CURSEFORGE_LATEST_FILE_URL', 'https://wow.curseforge.com/projects/musician/files/latest');
-	define('URL_FILENAME', 'download-url.txt');
+	define('GITHUB_LATEST_TAG_URL', 'https://api.github.com/repos/LenweSaralonde/Musician/tags');
+	define('DOWNLOAD_URL', 'https://www.curseforge.com/wow/addons/musician');
+	define('GITHUB_API_USER_AGENT', 'Musician Tag Retreiver');
+	define('VERSION_FILENAME', 'version.txt');
+	define('CACHE_TTL', 300);
 
 	$rootDir = dirname(__FILE__) . '/';
-	$urlFile = $rootDir . URL_FILENAME;
+	$versionFile = $rootDir . VERSION_FILENAME;
+	$version = @file_get_contents($versionFile);
+	$url = DOWNLOAD_URL;
 
-	$url = '';
-	if (!file_exists($urlFile) || (filemtime($urlFile) + 300 < time())) {
-		$ch = curl_init(CURSEFORGE_LATEST_FILE_URL);
-
-		curl_setopt($ch, CURLOPT_HEADER, 1);
+	if (!$version || (filemtime($versionFile) + CACHE_TTL < time())) {
+		$ch = curl_init(GITHUB_LATEST_TAG_URL);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$headers = curl_exec($ch);
+		curl_setopt($ch, CURLOPT_USERAGENT, GITHUB_API_USER_AGENT);
+		$json = @json_decode(@curl_exec($ch), true);
 		curl_close($ch);
-
-		$matches = [];
-		if (preg_match('/Location:[[:space:]]+(.*)/', $headers, $matches)) {
-			$url = trim($matches[1]);
-			file_put_contents($urlFile, $url);
+		if ($json && $json[0] && $json[0]['name']) {
+			$version = $json[0]['name'];
 		}
+		file_put_contents($versionFile, $version);
 	} else {
-		$url = file_get_contents($urlFile);
+		$version = file_get_contents($versionFile);
 	}
-
-	$version = preg_replace('/Musician-/', '', preg_replace('/\.zip$/', '', basename($url)));
 
 	header('Content-type: application/javascript');
 ?>
