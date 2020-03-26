@@ -1,0 +1,16 @@
+{
+  "name": "sfz-generator",
+  "version": "1.0.0",
+  "description": "Generate SFZ soundfonts from the add-on instruments.",
+  "main": "sfz-generator",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "LenweSaralonde",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "luaparse": "^0.3.0",
+    "minimist": "^1.2.5"
+  }
+}
