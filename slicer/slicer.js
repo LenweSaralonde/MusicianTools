@@ -13,7 +13,7 @@ function main() {
 	const argv = require('minimist')(process.argv.slice(2));
 
 	if (argv['_'][0] === undefined) {
-		console.error("Usage: node slicer.js [-l <normalize level>] [-n <normalize type>] <wav file>");
+		process.stderr.write("Usage: node slicer.js [-l <normalize level>] [-n <normalize type>] <wav file>");
 		process.exit(1);
 	}
 
@@ -21,7 +21,7 @@ function main() {
 	const slicesDir = slicesFile.replace(/\.[^\.]+$/, '');
 
 	if (!fs.existsSync(slicesFile)) {
-		console.error("Error: " + slicesFile + " does not exist.");
+		process.stderr.write("Error: " + slicesFile + " does not exist.");
 		process.exit(1);
 	}
 
@@ -37,8 +37,6 @@ function main() {
 	let SLICE_FORMAT = argv.format || 'ogg';
 	let NORMALIZE_LEVEL = argv.l;
 	let NORMALIZE_TYPE = argv.n;
-	let NORMALIZE_FROM = argv['normalize-from'];
-	let NORMALIZE_TO = argv['normalize-to'];
 
 	const notesFromMatches = NOTES_FROM.match(/([A-Z#]+)([0-9-]+)/);
 
@@ -76,7 +74,7 @@ function main() {
 		const volumeCommand = level ? `-filter:a "volume=${level}dB"`:'';
 		ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${volumeCommand} ${FFMPEG_PARAMS} ${outputFile}`;
 		const levelDisplay = level ? ('(' + (level > 0 ? '+' : '') + new Intl.NumberFormat('en-US').format(level) + 'dB)') : '';
-		console.log(`Encoding ${outputFile} ${levelDisplay}`);
+		process.stdout.write(`Encoding ${outputFile} ${levelDisplay}\n`);
 		out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
 
 		try {
@@ -96,7 +94,7 @@ function main() {
 	// Create normalized source file for comparison
 	const concatFiles = outputFiles.join('|');
 	ffmpegCommand = `ffmpeg -i "concat:${concatFiles}" -y -acodec copy ${normalizedFile}`;
-	const out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
+	child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
 }
 
 main();
