@@ -123,7 +123,7 @@ function getLuaConstant(file, variableBase, variableIdentifier) {
  * @return {string}
  */
 function getDisplayName(instrumentName) {
-	const parts = instrumentName.split('-')
+	const parts = (instrumentName || '').replace(/([A-Z])/g, ' $1').trim().split('-');
 	let word, i
 	for (i in parts) {
 		parts[i] = parts[i].substr(0, 1).toUpperCase() + parts[i].substr(1).toLowerCase();
@@ -159,12 +159,15 @@ function getNoteData(key, instrumentName) {
 	noteData.decay = instrument.decay;
 	noteData.isPercussion = instrument.isPercussion;
 	noteData.noteName = NOTE_NAMES[note] + octave;
+	noteData.noteLabel = NOTE_FILENAMES[note] + octave;
 	noteData.noteFilenames = [];
+	noteData.source = instrument.source;
 
 	if (instrument.midi !== 128) {
 		if (!instrument.isPercussion) {
 			noteData.noteFilenames.push(getRelativePath(instrument.path + '\\' + NOTE_FILENAMES[note] + octave + '.ogg'));
 		} else {
+			noteData.noteLabel = getDisplayName(MIDI_PERCUSSIONS[key]) || noteData.noteLabel;
 			if (instrument.path) {
 				noteData.noteFilenames.push(getRelativePath(instrument.path + '.ogg'));
 			} else if (instrument.pathList) {
@@ -173,12 +176,19 @@ function getNoteData(key, instrumentName) {
 				});
 			}
 		}
+
+		if (instrument.midi > 127) {
+			noteData.noteLabel = getDisplayName(MIDI_PERCUSSIONS[key]) || noteData.noteLabel;;
+		}
+
 	} else {
 		const percussionMidiInstrumentName = MIDI_PERCUSSIONS[key];
 		const percussionInstrumentName = MIDI_PERCUSSION_MAPPING[percussionMidiInstrumentName];
 		noteData.isPercussion = true;
 		if (percussionMidiInstrumentName && percussionInstrumentName && percussionInstrumentName !== 'none') {
 			const percussionNoteData = getNoteData(key, percussionInstrumentName);
+			noteData.noteLabel = getDisplayName(percussionInstrumentName);
+			noteData.source = percussionNoteData.source;
 			noteData.decay = percussionNoteData.decay;
 			noteData.noteFilenames = percussionNoteData.noteFilenames;
 		}
@@ -230,33 +240,69 @@ function main() {
 		let instrumentSfz = '';
 
 		instrumentSfz += `<group>\n`;
-		instrumentSfz += `amp_velcurve_1=1\n`; // All notes play max volume
+		if (midi <= 127) {
+			instrumentSfz += `group_label=${midi}. ${displayName}\n`;
+		} else {
+			instrumentSfz += `group_label=${displayName}\n`;
+		}
+		instrumentSfz += `amp_velcurve_1=1 // All notes play max velocity\n`;
 		instrumentSfz += `\n`;
 
 		let key;
+		let sources = [];
 		for (key = NOTE_FROM; key <= NOTE_TO; key++) {
 
 			const noteData = getNoteData(key, instrumentName);
 
 			if (noteData.noteFilenames.length > 0 && fs.existsSync(`${instrumentsDir}/${noteData.noteFilenames[0]}`)) {
 				noteData.noteFilenames.forEach((filename, index) => {
-					instrumentSfz += `<region> key=${noteData.noteName} sample=${filename}`;
-					instrumentSfz += ` ampeg_release=${noteData.decay * 4 / 1000}`; // Adjust in-game decay to SFZ decay
+					instrumentSfz += `<region>`;
+					instrumentSfz += `\n\tregion_label=${noteData.noteLabel}`;
+					instrumentSfz += `\n\tkey=${noteData.noteName}`;
+					instrumentSfz += `\n\tsample=${filename}`;
+					instrumentSfz += `\n\tampeg_release=${noteData.decay * 4 / 1000}`; // Adjust in-game decay to SFZ decay
 
 					// Sample randomization
 					if (noteData.noteFilenames.length > 1) {
 						const range = 1 / noteData.noteFilenames.length;
-						instrumentSfz += ` lorand=${range * index} hirand=${range * (index + 1)}`;
+						instrumentSfz += `\n\tlorand=${range * index}`;
+						instrumentSfz += `\n\thirand=${range * (index + 1)}`;
 					}
 
-					instrumentSfz += `\n`;
+					instrumentSfz += `\n\n`;
 				});
+			}
+
+			if (noteData.source && !sources.includes(noteData.source)) {
+				sources.push(noteData.source);
 			}
 		}
 
+		// Generate header
+
+		let header = '';
+
+		header += `/*\n`;
+		header += `// **********************************************************************\n`;
+		header += `// ${displayName}\n`;
+		header += `// Soundfont from Musician, the music add-on for World of Warcraft\n`;
+		header += `// https://musician.lenwe.io\n`;
+		header += `// MIDI program: ${(midi <= 127) ? midi : 'Percussion set'}\n`;
+		if (sources.length) {
+			header += `// Samples from ${sources.join(', ')}\n`;
+		}
+		header += `// **********************************************************************\n`;
+		header += `*/\n`;
+		header += `\n`;
+
+		header += `<global>\n`;
+		header += `global_label=Musician instruments\n`;
+		header += `\n`;
+
+		// Write SFZ file
 		const fileName = `${addonDir}/instruments/${paddedMidi} - ${displayName}.sfz`;
 		process.stdout.write(`${fileName}\n`);
-		fs.writeFileSync(fileName, instrumentSfz);
+		fs.writeFileSync(fileName, header + instrumentSfz);
 	});
 }
 
