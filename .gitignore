@@ -1,0 +1,7 @@
+.settings
+.buildpath
+.project
+/.DS_Store
+node_modules
+package-lock.json
+version.txt
