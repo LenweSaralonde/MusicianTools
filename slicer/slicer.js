@@ -1,6 +1,20 @@
 /**
  * SLICER
+ *
+ * Slice the source WAV file containing all instrument samples into normalized instrument OGG files for the Musician add-on.
+ * The output files will be created in a directory having the same name as the source WAV file.
  * Requires ffmpeg and ffmpeg-normalize https://github.com/slhck/ffmpeg-normalize
+ *
+ * Usage:
+ *    node slicer.js [<options>] <wav file>
+ *
+ * Options:
+ *    -l <normalize level> : Normalization level in dB (default: 0)
+ *    -n {rms|peak} : Normalization type (default: peak)
+ *    -d {duration} : Note sample duration in seconds (default: 6)
+ *    --from <note from> : Note from (default C0)
+ *    --to <note to> : Note to (default C8)
+ *    --format <format> : Output file format (default: ogg)
  */
 
 'use strict'
@@ -13,7 +27,7 @@ function main() {
 	const argv = require('minimist')(process.argv.slice(2));
 
 	if (argv['_'][0] === undefined) {
-		process.stderr.write("Usage: node slicer.js [-l <normalize level>] [-n <normalize type>] <wav file>");
+		process.stderr.write("Usage: node slicer.js [<options>] <wav file>");
 		process.exit(1);
 	}
 

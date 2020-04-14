@@ -1,5 +1,11 @@
 /**
  * SFZ GENERATOR
+ *
+ * Generate SFZ soundfont files of the Musician add-on instruments
+ * The .sfz files will be created in the instruments directory of the Musician add-on.
+ *
+ * Usage:
+ *    node sfz-generator.js <Musician add-on directory>
  */
 
 'use strict'
