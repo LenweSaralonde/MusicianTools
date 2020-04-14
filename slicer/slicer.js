@@ -46,7 +46,7 @@ function main() {
 	let currentNote;
 	let ffmpegCommand;
 
-	const normalizedFile = slicesDir + '_normalized.ogg';
+	const normalizedFile = slicesDir + '_normalized.' + SLICE_FORMAT;
 
 	const outputFiles = [];
 
@@ -56,7 +56,7 @@ function main() {
 		let out;
 
 		// Extract sample
-		ffmpegCommand = `ffmpeg -i ${slicesFile} -y -ss ${fileIndex * NOTE_DURATION} -t ${NOTE_DURATION} __chunk__.wav`;
+		ffmpegCommand = `ffmpeg -i "${slicesFile}" -y -ss ${fileIndex * NOTE_DURATION} -t ${NOTE_DURATION} __chunk__.wav`;
 		out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
 
 		let level = 0;
@@ -72,7 +72,7 @@ function main() {
 
 		// Encode sample and adjust level if needed
 		const volumeCommand = level ? `-filter:a "volume=${level}dB"`:'';
-		ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${volumeCommand} ${FFMPEG_PARAMS} ${outputFile}`;
+		ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${volumeCommand} ${FFMPEG_PARAMS} "${outputFile}"`;
 		const levelDisplay = level ? ('(' + (level > 0 ? '+' : '') + new Intl.NumberFormat('en-US').format(level) + 'dB)') : '';
 		process.stdout.write(`Encoding ${outputFile} ${levelDisplay}\n`);
 		out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
@@ -93,7 +93,7 @@ function main() {
 
 	// Create normalized source file for comparison
 	const concatFiles = outputFiles.join('|');
-	ffmpegCommand = `ffmpeg -i "concat:${concatFiles}" -y -acodec copy ${normalizedFile}`;
+	ffmpegCommand = `ffmpeg -i "concat:${concatFiles}" -y -acodec copy "${normalizedFile}"`;
 	child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
 }
 
