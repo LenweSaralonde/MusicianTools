@@ -12,8 +12,8 @@
  *    -l <normalize level> : Normalization level in dB (default: 0)
  *    -n {rms|peak} : Normalization type (default: peak)
  *    -d {duration} : Note sample duration in seconds (default: 6)
- *    --from <note from> : Note from (default C0)
- *    --to <note to> : Note to (default C8)
+ *    --from <note from> : Note from (default: C0)
+ *    --to <note to> : Note to (default: C8)
  *    --format <format> : Output file format (default: ogg)
  */
 

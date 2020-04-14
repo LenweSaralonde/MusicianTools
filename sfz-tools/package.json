@@ -1,0 +1,17 @@
+{
+  "name": "sfz-tools",
+  "version": "1.0.0",
+  "description": "Tools to make SFZ soundfonts out of virtual instrument samples.",
+  "main": "wav2sfz",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "LenweSaralonde",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "minimist": "^1.2.5",
+    "wavefile": "^11.0.0",
+    "wavefile-parser": "^1.0.1"
+  }
+}
