@@ -171,7 +171,16 @@ function getNoteData(key, instrumentName) {
 
 	if (instrument.midi !== 128) {
 		if (!instrument.isPercussion) {
-			noteData.noteFilenames.push(getRelativePath(instrument.path + '\\' + NOTE_FILENAMES[note] + octave + '.ogg'));
+			if (instrument.path) {
+				noteData.noteFilenames.push(getRelativePath(instrument.path + '\\' + NOTE_FILENAMES[note] + octave + '.ogg'));
+			} else if (instrument.regions) {
+				let region;
+				for (region of instrument.regions) {
+					if (key >= region.loKey && key <= region.hiKey) {
+						noteData.noteFilenames.push(getRelativePath(region.path + '\\' + NOTE_FILENAMES[note] + octave + '.ogg'));
+					}
+				}
+			}
 		} else {
 			noteData.noteLabel = getDisplayName(MIDI_PERCUSSIONS[key]) || noteData.noteLabel;
 			if (instrument.path) {
