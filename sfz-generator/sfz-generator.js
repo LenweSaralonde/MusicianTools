@@ -124,19 +124,19 @@ function getLuaConstant(file, variableBase, variableIdentifier) {
 }
 
 /**
- * Get display name out of internam instrument name
+ * Get display name out of internal instrument name
  * @param {string} instrumentName
  * @return {string}
  */
 function getDisplayName(instrumentName) {
 	const parts = (instrumentName || '').replace(/([A-Z])/g, ' $1').trim().split('-');
-	let word, i
+	let i
 	for (i in parts) {
 		parts[i] = parts[i].substr(0, 1).toUpperCase() + parts[i].substr(1).toLowerCase();
 		break;
 	}
 
-	return parts.join(' ');
+	return parts.join(' ').replace(/[ ]+/g, ' ');
 }
 
 /**
@@ -161,6 +161,7 @@ function getNoteData(key, instrumentName) {
 	const noteId = key - 12;
 	const octave = Math.floor(noteId / 12);
 	const note = noteId % 12;
+
 	noteData.midi = instrument.midi;
 	noteData.decay = instrument.decay;
 	noteData.isPercussion = instrument.isPercussion;
@@ -168,6 +169,7 @@ function getNoteData(key, instrumentName) {
 	noteData.noteLabel = NOTE_FILENAMES[note] + octave;
 	noteData.noteFilenames = [];
 	noteData.source = instrument.source;
+	noteData.keyMod = instrument.keyMod;
 
 	if (instrument.midi !== 128) {
 		if (!instrument.isPercussion) {
@@ -181,8 +183,13 @@ function getNoteData(key, instrumentName) {
 					}
 				}
 			}
+		} else if (noteData.keyMod && instrument.pathList) {
+			const index = (key - noteData.keyMod) % instrument.pathList.length;
+			const sampleName = getDisplayName(instrument.pathList[index].split('\\').pop());
+			noteData.noteLabel += ' - ' + sampleName;
+			noteData.noteFilenames.push(getRelativePath(instrument.pathList[index] + '.ogg'));
 		} else {
-			noteData.noteLabel = getDisplayName(MIDI_PERCUSSIONS[key]) || noteData.noteLabel;
+			noteData.noteLabel += ' - ' + (getDisplayName(MIDI_PERCUSSIONS[key]) || 'N/A');
 			if (instrument.path) {
 				noteData.noteFilenames.push(getRelativePath(instrument.path + '.ogg'));
 			} else if (instrument.pathList) {
@@ -193,7 +200,7 @@ function getNoteData(key, instrumentName) {
 		}
 
 		if (instrument.midi > 127) {
-			noteData.noteLabel = getDisplayName(MIDI_PERCUSSIONS[key]) || noteData.noteLabel;;
+			noteData.noteLabel += ' - ' + (getDisplayName(MIDI_PERCUSSIONS[key]) || 'N/A');
 		}
 
 	} else {
@@ -202,7 +209,7 @@ function getNoteData(key, instrumentName) {
 		noteData.isPercussion = true;
 		if (percussionMidiInstrumentName && percussionInstrumentName && percussionInstrumentName !== 'none') {
 			const percussionNoteData = getNoteData(key, percussionInstrumentName);
-			noteData.noteLabel = getDisplayName(percussionInstrumentName);
+			noteData.noteLabel += ' - ' + getDisplayName(percussionInstrumentName);
 			noteData.source = percussionNoteData.source;
 			noteData.decay = percussionNoteData.decay;
 			noteData.noteFilenames = percussionNoteData.noteFilenames;
@@ -277,11 +284,9 @@ function main() {
 					instrumentSfz += `\n\tsample=${filename}`;
 					instrumentSfz += `\n\tampeg_release=${noteData.decay * 4 / 1000}`; // Adjust in-game decay to SFZ decay
 
-					// Sample randomization
-					if (noteData.noteFilenames.length > 1) {
-						const range = 1 / noteData.noteFilenames.length;
-						instrumentSfz += `\n\tlorand=${range * index}`;
-						instrumentSfz += `\n\thirand=${range * (index + 1)}`;
+					// Sample round robin
+					if (!noteData.keyMod && noteData.noteFilenames.length > 1) {
+						instrumentSfz += `\n\tseq_length=${noteData.noteFilenames.length} seq_position=${index + 1}`;
 					}
 
 					instrumentSfz += `\n\n`;
