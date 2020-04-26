@@ -139,6 +139,7 @@ function main() {
 		// Adjust loop duration to match note phase
 		const period = 1 / getFrequency(key); // s
 		const duration = Math.round(loopDuration / period) * period; // s
+		const crossfadeDuration = Math.round(crossfade / period) * period; // s
 
 		// Set cue region for looping
 		const sampleStart = sampleId * sampleDuration * 1000; // ms
@@ -160,7 +161,7 @@ function main() {
 		// Crossfade
 		const sampleLoopFrom = Math.round(loopStart / 1000 * sampleRate); // Sample index of loop start
 		const sampleLoopTo = Math.round(loopEnd / 1000 * sampleRate); // Sample index of loop end
-		const crossfadeSamples = Math.round(crossfade * sampleRate); // Crossfade length in samples
+		const crossfadeSamples = Math.round(crossfadeDuration * sampleRate); // Crossfade length in samples
 
 		let sample;
 		for (sample = 0; sample <= crossfadeSamples; sample++) {
