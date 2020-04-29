@@ -58,7 +58,7 @@ function getLoopPoints(offset, end, wav) {
 		const loopEnd = loopStart + cuePoint.dwSampleLength;
 
 		if (loopStart >= offset && loopStart <= end && loopEnd >= offset && loopEnd <= end) {
-			return [loopStart, loopEnd];
+			return [loopStart, loopEnd - 1];
 		}
 	}
 
