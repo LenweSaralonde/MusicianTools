@@ -76,6 +76,36 @@ function crossFade(sampleFrom, sampleTo, t) {
 }
 
 /**
+ * Return the phase index near indexTo matching the phase at indexFrom
+ * @param {WaveFile} wav
+ * @param {int} indexFrom
+ * @param {int} indexTo
+ * @param {int} period in samples
+ * @return {int}
+ */
+function findPhase(wav, indexFrom, indexTo, period) {
+	let bestIndex = indexTo;
+	let bestScore = Infinity; // Should be the lowest possible
+
+	let offset;
+	for (offset = -period; offset <= period; offset++) {
+		let score = 0;
+		let t = 0;
+		for (t = 0; t <= period; t++) {
+			const sampleA = wav.getSample((indexFrom + t) * wav.fmt.numChannels); // Reference sample
+			const sampleB = wav.getSample((indexTo + t + offset) * wav.fmt.numChannels); // Sample to compare to
+			score += Math.abs(sampleB - sampleA);
+		}
+		if (score < bestScore) {
+			bestScore = score;
+			bestIndex = indexTo + offset;
+		}
+	}
+
+	return bestIndex;
+}
+
+/**
  * Main function
  */
 function main() {
@@ -136,20 +166,22 @@ function main() {
 	let key;
 	let sampleId = 0;
 	for (key = keyFrom; key <= keyTo; key++) {
-		// Adjust loop duration to match note phase
-		const period = 1 / getFrequency(key); // s
-		const duration = Math.round(loopDuration / period) * period; // s
+
+		const frequency = getFrequency(key);
+
+		process.stdout.write(`Looping ${getNoteName(key).toUpperCase()} ${key} ${frequency} Hz\n`);
+
+		const period = 1 / frequency; // s
+
+		const sampleStartIndex = Math.round(sampleId * sampleDuration * sampleRate);
+		const loopStartIndex = sampleStartIndex + Math.round(loopFrom * sampleRate);
+		const loopEndIndex = findPhase(wav, loopStartIndex, loopStartIndex + Math.round(loopDuration * sampleRate), Math.round(1.1 * period * sampleRate));
+
 		const crossfadeDuration = Math.round(crossfade / period) * period; // s
 
-		// Set cue region for looping
-		const sampleStart = sampleId * sampleDuration * 1000; // ms
-		const sampleEnd = (sampleId + 1) * sampleDuration * 1000; // ms
-		const loopStart = sampleStart + loopFrom * 1000; // ms
-		const loopEnd = Math.min(sampleEnd, loopStart + 1000 * duration); // ms
-
 		wav.setCuePoint({
-			position: loopStart,
-			end: loopEnd,
+			position: 1000 * loopStartIndex / sampleRate,
+			end: 1000 * loopEndIndex / sampleRate,
 			//label: `Loop ${getNoteName(key).toUpperCase()}`, // Labels are not properly supported by WaveFile
 			dwPurposeID: 544106354,
 			dwCountry: 0,
@@ -159,28 +191,27 @@ function main() {
 		});
 
 		// Crossfade
-		const sampleLoopFrom = Math.round(loopStart / 1000 * sampleRate); // Sample index of loop start
-		const sampleLoopTo = Math.round(loopEnd / 1000 * sampleRate); // Sample index of loop end
-		const crossfadeSamples = Math.round(crossfadeDuration * sampleRate); // Crossfade length in samples
+		const crossfadeLength = Math.round(crossfadeDuration * sampleRate);
 
 		let sample;
-		for (sample = 0; sample <= crossfadeSamples; sample++) {
-			const t = sample / crossfadeSamples;
+		for (sample = 0; sample <= crossfadeLength; sample++) {
+			const t = sample / crossfadeLength;
 			let c = 0;
 			for (c = 0; c < channels; c++) {
-				const indexFrom  = (sampleLoopTo   - sample) * channels + c; // inside loop (end), fading out
-				const indexTo    = (sampleLoopFrom - sample) * channels + c; // outside loop (before), fading in
-				const indexFromEnd = (sampleLoopTo + sample + 1) * channels + c; // inside loop (start), fading out
-				const indexToEnd   = (sampleLoopFrom   + sample + 1) * channels + c; // outside loop (after), fading in
+				const indexFrom  = (loopEndIndex   - sample) * channels + c; // inside loop (end), fading out
+				const indexTo    = (loopStartIndex - sample) * channels + c; // outside loop (before), fading in
 
 				const sampleFrom = wav.getSample(indexFrom) / range;
 				const sampleTo = wav.getSample(indexTo) / range;
 
-				const sampleFromEnd = wav.getSample(indexFromEnd) / range;
-				const sampleToEnd = wav.getSample(indexToEnd) / range;
-
 				const mixIn = crossFade(sampleFrom, sampleTo, t);
 				wav.setSample(indexFrom, Math.round(mixIn * range));
+
+				const indexFromEnd = (loopEndIndex + sample + 1) * channels + c; // inside loop (start), fading out
+				const indexToEnd   = (loopStartIndex   + sample + 1) * channels + c; // outside loop (after), fading in
+
+				const sampleFromEnd = wav.getSample(indexFromEnd) / range;
+				const sampleToEnd = wav.getSample(indexToEnd) / range;
 
 				const mixOut = crossFade(sampleFromEnd, sampleToEnd, t);
 				wav.setSample(indexFromEnd, Math.round(mixOut * range));
@@ -192,7 +223,7 @@ function main() {
 
 	fs.writeFileSync(outFile, wav.toBuffer());
 
-	process.stderr.write(`Created looped WAV file: ${outFile}\n`);
+	process.stdout.write(`Created looped WAV file: ${outFile}\n`);
 }
 
 main();
