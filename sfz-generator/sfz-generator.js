@@ -250,6 +250,7 @@ function main() {
 	MIDI_PERCUSSION_MAPPING = getLuaConstant(`${addonDir}/constants/Musician.MidiMapping.lua`, 'Musician', 'MIDI_PERCUSSION_MAPPING');
 
 	// Generate SFZ files
+	const sfzFiles = {};
 	INSTRUMENTS_AVAILABLE.forEach((instrumentName) => {
 		if (instrumentName === 'none') {
 			return;
@@ -257,7 +258,14 @@ function main() {
 
 		const displayName = getDisplayName(instrumentName);
 		const midi = INSTRUMENTS[instrumentName].midi;
-		const paddedMidi = ('000' + midi).slice(-3);
+		let paddedMidi = '';
+		if (midi <= 127) {
+			paddedMidi = '000-' + ('000' + midi).slice(-3);
+		} else if (midi === 128) {
+			paddedMidi = '128-000'; // standard drum set
+		} else if (midi === 129) {
+			paddedMidi = '128-016'; // power drum set
+		}
 
 		let instrumentSfz = '';
 
@@ -320,10 +328,50 @@ function main() {
 		header += `\n`;
 
 		// Write SFZ file
-		const fileName = `${addonDir}/instruments/${paddedMidi} - ${displayName}.sfz`;
-		process.stdout.write(`${fileName}\n`);
-		fs.writeFileSync(fileName, header + instrumentSfz);
+		const fileName = `[${paddedMidi}] ${displayName}.sfz`;
+		process.stdout.write(`${instrumentsDir}/${fileName}\n`);
+		fs.writeFileSync(`${instrumentsDir}/${fileName}`, header + instrumentSfz);
+		sfzFiles[instrumentName] = fileName;
 	});
+
+	// Generate soundfont list for CoolSoft VirtualMIDISynth
+	let soundfontList = `[SoundFonts]\n`;
+	let soundfontIndex = 1;
+
+	function addSoundfontInstrument(instrumentName, preset, bank) {
+		soundfontList += `sf${soundfontIndex}=${sfzFiles[instrumentName]}\n`;
+		soundfontList += `sf${soundfontIndex}.enabled=1\n`;
+		soundfontList += `sf${soundfontIndex}.preset=${preset}\n`;
+		soundfontList += `sf${soundfontIndex}.bank=${bank}\n`;
+		soundfontIndex++;
+	}
+
+	Object.keys(MIDI_INSTRUMENTS).forEach((midiInstrumentName) => {
+		let instrumentId = MIDI_INSTRUMENTS[midiInstrumentName];
+		const instrumentName = MIDI_INSTRUMENT_MAPPING[midiInstrumentName];
+
+		if (instrumentName === 'none') {
+			return;
+		}
+
+		if (instrumentId <= 127) { // Melodic
+			addSoundfontInstrument(instrumentName, instrumentId, 0);
+		} else if (instrumentId === 128) { // Traditional percussions
+			addSoundfontInstrument(instrumentName, 0, 128); // Standard set (0)
+			addSoundfontInstrument(instrumentName, 8, 128); // Room set (8)
+			addSoundfontInstrument(instrumentName, 32, 128); // Jazz set (32)
+			addSoundfontInstrument(instrumentName, 40, 128); // Brush set (40)
+			addSoundfontInstrument(instrumentName, 48, 128); // Orchestra set (48)
+		} else if (instrumentId === 129) { // Standard drum kit
+			addSoundfontInstrument(instrumentName, 16, 128); // Power set (16)
+			addSoundfontInstrument(instrumentName, 24, 128); // Electronic set (24)
+			addSoundfontInstrument(instrumentName, 25, 128); // TR-808 set (25)
+		}
+	})
+
+	const fileName = 'Musician GM.vmssf';
+	process.stdout.write(`${instrumentsDir}/${fileName}\n`);
+	fs.writeFileSync(`${instrumentsDir}/${fileName}`, soundfontList);
 }
 
 main();
