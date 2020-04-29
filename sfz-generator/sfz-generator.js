@@ -233,6 +233,7 @@ function main() {
 
 	const addonDir = argv['_'][0].replace(/\.[^\.]+$/, '').replace(/\\/g, '/');
 	const instrumentsDir = `${addonDir}/instruments`;
+	const soundfontsDir = `${addonDir}/soundfonts`;
 
 	if (!fs.existsSync(addonDir)) {
 		process.stderr.write(`Error: ${addonDir} does not exist.\n`);
@@ -289,7 +290,7 @@ function main() {
 					instrumentSfz += `<region>`;
 					instrumentSfz += `\n\tregion_label=${noteData.noteLabel}`;
 					instrumentSfz += `\n\tkey=${noteData.noteName}`;
-					instrumentSfz += `\n\tsample=${filename}`;
+					instrumentSfz += `\n\tsample=../instruments/${filename}`;
 					instrumentSfz += `\n\tampeg_release=${noteData.decay * 4 / 1000}`; // Adjust in-game decay to SFZ decay
 
 					// Sample round robin
@@ -329,8 +330,8 @@ function main() {
 
 		// Write SFZ file
 		const fileName = `[${paddedMidi}] ${displayName}.sfz`;
-		process.stdout.write(`${instrumentsDir}/${fileName}\n`);
-		fs.writeFileSync(`${instrumentsDir}/${fileName}`, header + instrumentSfz);
+		process.stdout.write(`${soundfontsDir}/${fileName}\n`);
+		fs.writeFileSync(`${soundfontsDir}/${fileName}`, header + instrumentSfz);
 		sfzFiles[instrumentName] = fileName;
 	});
 
@@ -370,8 +371,8 @@ function main() {
 	})
 
 	const fileName = 'Musician GM.vmssf';
-	process.stdout.write(`${instrumentsDir}/${fileName}\n`);
-	fs.writeFileSync(`${instrumentsDir}/${fileName}`, soundfontList);
+	process.stdout.write(`${soundfontsDir}/${fileName}\n`);
+	fs.writeFileSync(`${soundfontsDir}/${fileName}`, soundfontList);
 }
 
 main();
