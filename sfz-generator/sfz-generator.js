@@ -260,12 +260,10 @@ function main() {
 		const displayName = getDisplayName(instrumentName);
 		const midi = INSTRUMENTS[instrumentName].midi;
 		let paddedMidi = '';
-		if (midi <= 127) {
+		if (midi < 128) {
 			paddedMidi = '000-' + ('000' + midi).slice(-3);
-		} else if (midi === 128) {
-			paddedMidi = '128-000'; // standard drum set
-		} else if (midi === 129) {
-			paddedMidi = '128-016'; // power drum set
+		} else {
+			paddedMidi = '128-' + ('000' + (midi - 128)).slice(-3);
 		}
 
 		let instrumentSfz = '';
@@ -355,18 +353,10 @@ function main() {
 			return;
 		}
 
-		if (instrumentId <= 127) { // Melodic
+		if (instrumentId < 128) { // Melodic
 			addSoundfontInstrument(instrumentName, instrumentId, 0);
-		} else if (instrumentId === 128) { // Traditional percussions
-			addSoundfontInstrument(instrumentName, 0, 128); // Standard set (0)
-			addSoundfontInstrument(instrumentName, 8, 128); // Room set (8)
-			addSoundfontInstrument(instrumentName, 32, 128); // Jazz set (32)
-			addSoundfontInstrument(instrumentName, 40, 128); // Brush set (40)
-			addSoundfontInstrument(instrumentName, 48, 128); // Orchestra set (48)
-		} else if (instrumentId === 129) { // Standard drum kit
-			addSoundfontInstrument(instrumentName, 16, 128); // Power set (16)
-			addSoundfontInstrument(instrumentName, 24, 128); // Electronic set (24)
-			addSoundfontInstrument(instrumentName, 25, 128); // TR-808 set (25)
+		} else { // Percussions
+			addSoundfontInstrument(instrumentName, instrumentId - 128, 128);
 		}
 	})
 
