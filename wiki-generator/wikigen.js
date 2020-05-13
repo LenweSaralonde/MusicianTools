@@ -10,7 +10,6 @@
 
 const fs = require('fs');
 
-
 function parseLua(file) {
 
     const functions = [];
@@ -143,94 +142,104 @@ function parseLua(file) {
     return { moduleName, moduleDescription, events, functions, fields };
 }
 
-function getToc(list, level = 1) {
-    let indent;
-    switch(level) {
-        case 1: indent = '- '; break;
-        case 2: indent = '  * '; break;
-        case 3: indent = '    + '; break;
-        default: indent = '';
-    }
-
-    let toc = "";
-    list.forEach((e) => {
-        const anchor = e.anchor || e.name.toLowerCase().replace(/[^a-z0-9_]+/g, '').replace(/_/g, '-');
-
-        toc += `${indent}[${e.name}](#${anchor})\n`;
-    })
-    return toc;
-}
-
-function getFunctionsDoc(title, module) {
-    let md = `### ${title}\n`;
+function getFunctionsDoc(module) {
+	let md = '';
 
     md += `${module.moduleDescription}\n\n`;
 
-    // Module is a class: Add fields
-    if (module.fields) {
-        md += `#### Fields\n`;
+	if (module.fields.length > 0) {
+		md += `- [Fields](#fields)\n`;
+		module.fields.forEach((e) => {
+			const anchor = e.name.toLowerCase().replace(/[^a-z0-9_]+/g, '').replace(/_/g, '-');
+			md += `  * [${e.name}](#${anchor})\n`;
+		})
+	}
+
+	if (module.functions.length > 0) {
+		md += `- [Functions](#functions)\n`;
+		module.functions.forEach((e) => {
+			const anchor = e.name.toLowerCase().replace(/[^a-z0-9_]+/g, '').replace(/_/g, '-');
+			md += `  * [${e.name}](#${anchor})\n`;
+		})
+	}
+
+	md += `\n`;
+
+    // Fields
+    if (module.fields.length > 0) {
+        md += `# Fields\n`;
         module.fields.forEach((field) => {
            md += `* **${field.name}** _(${field.type})_ ${field.desc}\n`;
         });
     }
 
-    // Functions
-    module.functions.forEach((funcSpecs) => {
-        if (!funcSpecs.name || funcSpecs.local) {
-            return;
-        }
+	// Functions
+    if (module.functions.length > 0) {
+        md += `# Functions\n`;
+		module.functions.forEach((funcSpecs) => {
+			if (!funcSpecs.name || funcSpecs.local) {
+				return;
+			}
 
-        // Function name (title)
-        md += '#### ' + funcSpecs.name + "\n";
+			// Function name (title)
+			md += '## ' + funcSpecs.name + "\n";
 
-        // Description
-        md += funcSpecs.description.join("\n\n") + "\n";
+			// Description
+			md += funcSpecs.description.join("\n\n") + "\n";
 
-        // Usage snippet
-        const luaParams = funcSpecs.param.reduce((str, param) => (str !== '' ? (str + ', ') : '') + param.name, '');
-        const luaReturns = funcSpecs.returns.reduce((str, returns) => (str !== '' ? (str + ', ') : '') + returns.name, '');
-        md += '```lua' + "\n" + (luaReturns ? (luaReturns + ' = ') : '') + funcSpecs.name + '(' + luaParams + ')' + "\n```\n";
+			// Usage snippet
+			const luaParams = funcSpecs.param.reduce((str, param) => (str !== '' ? (str + ', ') : '') + param.name, '');
+			const luaReturns = funcSpecs.returns.reduce((str, returns) => (str !== '' ? (str + ', ') : '') + returns.name, '');
+			md += '```lua' + "\n" + (luaReturns ? (luaReturns + ' = ') : '') + funcSpecs.name + '(' + luaParams + ')' + "\n```\n";
 
-        // Arguments
-        if (funcSpecs.param.length) {
-            let param;
-            md += `\n**Arguments**\n`;
-            for (param of funcSpecs.param) {
+			// Arguments
+			if (funcSpecs.param.length) {
+				let param;
+				md += `**Arguments**\n`;
+				for (param of funcSpecs.param) {
 
-                let desc = param.desc ? (' ' + param.desc) : ''
-                let opt = param.opt ?
-                    (param.optDefault ?
-                        ` _(default=${param.optDefault})` :
-                        ' _(optional)_') :
-                    '';
+					let desc = param.desc ? (' ' + param.desc) : ''
+					let opt = param.opt ?
+						(param.optDefault ?
+							` _(default=${param.optDefault})` :
+							' _(optional)_') :
+						'';
 
-                md += `* **${param.name}** _(${param.type})_${desc}${opt}\n`;
-            }
-        }
+					md += `* **${param.name}** _(${param.type})_${desc}${opt}\n`;
+				}
+			}
 
-        // Returns
-        if (funcSpecs.returns.length) {
-            let returns;
-            md += "\n" + '**Returns**' + "\n";
-            for (returns of funcSpecs.returns) {
-                md += '* **' + returns.name + '**' + ' _(' + returns.type + ')_' + (returns.desc ? (' ' + returns.desc) : '') + "\n";
-            }
-        }
+			// Returns
+			if (funcSpecs.returns.length) {
+				let returns;
+				md += "\n" + '**Returns**' + "\n";
+				for (returns of funcSpecs.returns) {
+					md += '* **' + returns.name + '**' + ' _(' + returns.type + ')_' + (returns.desc ? (' ' + returns.desc) : '') + "\n";
+				}
+			}
 
-        md += `\n`;
-    });
+			md += `\n`;
+		});
+	}
 
     return md;
 }
 
 function getEventsDoc(module) {
 
-    let md = '';
+	let md = '';
+
+	module.events.forEach((e) => {
+		const anchor = e.name.toLowerCase().replace(/[^a-z0-9_]+/g, '').replace(/_/g, '-');
+		md += `- [${e.name}](#${anchor})\n`;
+	});
+
+	md += `\n`;
 
     // Events
     module.events.forEach((eventSpecs) => {
         // Event name
-        md += '### ' + eventSpecs.name + "\n";
+        md += '# ' + eventSpecs.name + "\n";
 
         // Description
         md += eventSpecs.description.join("\n\n") + "\n";
@@ -256,96 +265,29 @@ function getEventsDoc(module) {
     });
 
     return md;
-
 }
 
-function getDocs(directory) {
-    const docs = {};
+function getDocs(directory, wikiDirectory) {
+	fs.writeFileSync(`${wikiDirectory}/API-Main.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.lua`)));
+    fs.writeFileSync(`${wikiDirectory}/API-Sampler.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Sampler.lua`)));
+    fs.writeFileSync(`${wikiDirectory}/API-Communication.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Comm.lua`)));
+    fs.writeFileSync(`${wikiDirectory}/API-Registry.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Registry.lua`)));
+    fs.writeFileSync(`${wikiDirectory}/API-Live.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Live.lua`)));
+    fs.writeFileSync(`${wikiDirectory}/API-Worker.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Worker.lua`)));
+	fs.writeFileSync(`${wikiDirectory}/API-Utility-functions.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Utils.lua`)));
 
-    // functions
-    const main = parseLua(`${directory}/core/Musician.lua`); // Main
-    const sampler = parseLua(`${directory}/core/Musician.Sampler.lua`); // Sampler
-    const comm = parseLua(`${directory}/core/Musician.Comm.lua`); // Communication
-    const registry = parseLua(`${directory}/core/Musician.Registry.lua`); // Registry
-    const live = parseLua(`${directory}/core/Musician.Live.lua`); // Live
-    const utils = parseLua(`${directory}/core/Musician.Utils.lua`); // Utility functions
-    const worker = parseLua(`${directory}/core/Musician.Worker.lua`); // Worker manager
+    fs.writeFileSync(`${wikiDirectory}/API-Song.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Song.lua`)));
+	fs.writeFileSync(`${wikiDirectory}/API-VolumeMeter.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.VolumeMeter.lua`)));
 
-    // classes
-    const song = parseLua(`${directory}/core/Musician.Song.lua`); // Musician.Song
-    const volumeMeter = parseLua(`${directory}/core/Musician.VolumeMeter.lua`); // Musician.VolumeMeter
-
-    // events
-    const events = parseLua(`${directory}/constants/Musician.Constants.lua`); // Events
-
-    // Generate markdown
-    let md = '';
-
-    //////// TOC
-
-    // Functions
-    md += getToc([{ name: "Functions" }], 1);
-    md += getToc([{ name: "Main" }], 2);
-    md += getToc(main.functions, 3);
-    md += getToc([{ name: "Sampler" }], 2);
-    md += getToc(sampler.functions, 3);
-    md += getToc([{ name: "Communication" }], 2);
-    md += getToc(comm.functions, 3);
-    md += getToc([{ name: "Registry" }], 2);
-    md += getToc(registry.functions, 3);
-    md += getToc([{ name: "Live" }], 2);
-    md += getToc(live.functions, 3);
-    md += getToc([{ name: "Worker" }], 2);
-    md += getToc(worker.functions, 3);
-    md += getToc([{ name: "Utility functions" }], 2);
-    md += getToc(utils.functions, 3);
-
-    // Classes
-    md += getToc([{ name: "Classes" }], 1);
-    md += getToc([{ name: "Musician.Song" }], 2);
-    md += getToc([{ name: "Fields", anchor: 'fields' }], 3);
-    md += getToc(song.functions, 3);
-    md += getToc([{ name: "Musician.VolumeMeter" }], 2);
-    md += getToc([{ name: "Fields", anchor: 'fields-1' }], 3);
-    md += getToc(volumeMeter.functions, 3);
-
-    // Events
-    md += getToc([{ name: "Events" }], 1);
-    md += getToc(events.events, 2);
-
-    //////// Content
-
-    // Functions
-    md += `## Functions\n`;
-    md += getFunctionsDoc("Main", main);
-    md += getFunctionsDoc("Sampler", sampler);
-    md += getFunctionsDoc("Communication", comm);
-    md += getFunctionsDoc("Registry", registry);
-    md += getFunctionsDoc("Live", live);
-    md += getFunctionsDoc("Worker", worker);
-    md += getFunctionsDoc("Utility functions", utils);
-
-    // Classes
-    md += `## Classes\n`;
-    md += getFunctionsDoc("Musician.Song", song);
-    md += getFunctionsDoc("Musician.VolumeMeter", volumeMeter);
-
-    // Events
-    md += `## Events\n`;
-    md += getEventsDoc(events);
-
-    return md;
+    fs.writeFileSync(`${wikiDirectory}/API-Events.md`, getEventsDoc(parseLua(`${directory}/constants/Musician.Constants.lua`)));
 }
-
 
 function main() {
     const argv = require('minimist')(process.argv.slice(2));
     const addonDirectory = argv['_'][0];
     const wikiDirectory = argv['_'][1];
 
-    const md = getDocs(addonDirectory);
-
-    fs.writeFileSync(`${wikiDirectory}/API-documentation.md`, md);
+    const md = getDocs(addonDirectory, wikiDirectory);
 }
 
 main();
