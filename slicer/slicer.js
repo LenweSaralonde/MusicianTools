@@ -6,7 +6,7 @@
  * Requires ffmpeg and ffmpeg-normalize https://github.com/slhck/ffmpeg-normalize
  *
  * Usage:
- *    node slicer.js [<options>] <wav file>
+ *    node slicer.js [<options>] <wav file> [<output dir>]
  *
  * Options:
  *    -l <normalize level> : Normalization level in dB (default: 0)
@@ -15,6 +15,8 @@
  *    --from <note from> : Note from (default: C0)
  *    --to <note to> : Note to (default: C8)
  *    --format <format> : Output file format (default: ogg)
+ *    --fileIndex <index> : First note index in the file (default: 0)
+ *    --ffmpegParams <params> : Additional parameters to be provided to ffmpeg
  */
 
 'use strict'
@@ -32,7 +34,7 @@ function main() {
 	}
 
 	const slicesFile = argv['_'][0];
-	const slicesDir = slicesFile.replace(/\.[^\.]+$/, '');
+	const slicesDir = argv['_'][1] || slicesFile.replace(/\.[^\.]+$/, '');
 
 	if (!fs.existsSync(slicesFile)) {
 		process.stderr.write("Error: " + slicesFile + " does not exist.");
@@ -47,14 +49,14 @@ function main() {
 	let NOTES_FROM = argv.from || 'C0';
 	let NOTES_TO   = argv.to || 'C8';
 	let NOTE_DURATION = (argv.d !== undefined)?parseInt(argv.d):6;
-	let FFMPEG_PARAMS = '';
+	let FFMPEG_PARAMS = argv.ffmpegParams || '';
 	let SLICE_FORMAT = argv.format || 'ogg';
 	let NORMALIZE_LEVEL = argv.l;
 	let NORMALIZE_TYPE = argv.n;
 
 	const notesFromMatches = NOTES_FROM.match(/([A-Z#]+)([0-9-]+)/);
 
-	let fileIndex = 0;
+	let fileIndex = argv.fileIndex || 0;
 	let noteIndex = NOTES.indexOf(notesFromMatches[1]);
 	let currentOctave = notesFromMatches[2];
 	let currentNote;
