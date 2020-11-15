@@ -3,28 +3,30 @@ How to create demo songs that won't be fucked by the CurseForge packager
 1. Save the demo songs you want in MusicianList
 2. Run the following code:
 
+	-- Edit
+	local DEMO_SONG_IDS = {
+		'bachflip (lenwesaralonde & google ai, harp)',
+		'the kesh jig (traditional irish, recorder, lute, percussions)',
+		'lady athenry',
+	}
+
 	function MusicianList.ConvertDemoSongs()
+		MusicianList_Storage.demoSongs = {}
 
-		MusicianList_Storage.demoSongs = Musician.Utils.DeepCopy(MusicianList_Storage.data)
-
-		local id, song
-		for id, song in pairs(MusicianList_Storage.data) do
-			MusicianList_Storage.demoSongs[id].chunks = {}
-
-			local chunk, i, c
-			for i, chunk in pairs(song.chunks) do
-				local str = ""
-
-				while string.len(chunk) > 0 do
-					str = str .. '\\' .. string.byte(string.sub(chunk, 1, 1))
-					chunk = string.sub(chunk, 2)
-				end
-
-				table.insert(MusicianList_Storage.demoSongs[id].chunks, str)
+		local id
+		for _, id in pairs(DEMO_SONG_IDS) do
+			local song = Musician.Utils.DeepCopy(MusicianList_Storage.data[id])
+			local data = song.data
+			local escapedData = ''
+			local i
+			for i = 1, #data, 1 do
+				escapedData = escapedData .. '\\' .. string.byte(string.sub(data, i, i))
 			end
+			song.data = escapedData
+			MusicianList_Storage.demoSongs[id] = song
 		end
 	end
-
+	
 	MusicianList.ConvertDemoSongs()
 
 3. Reload UI
