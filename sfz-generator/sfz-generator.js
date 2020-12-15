@@ -333,21 +333,16 @@ function main() {
 		sfzFiles[instrumentName] = fileName;
 	});
 
-	// Generate soundfont list generator for CoolSoft VirtualMIDISynth
-	let VMSConfigFile = `Musician_GM_soundfonts.vmssf`;
-
-	let soundfontListGenerator = ``
-	soundfontListGenerator += `@ECHO OFF\n`;
-	soundfontListGenerator += `ECHO Generating .vmssf soundfont list file for CoolSoft VirtualMIDISynth...\n`;
-	soundfontListGenerator += `ECHO [SoundFonts] > ${VMSConfigFile}\n`;
+	// Generate soundfont list for CoolSoft VirtualMIDISynth
+	let soundfontList = `[SoundFonts]\n`;
 
 	let soundfontIndex = 1;
 
 	function addSoundfontInstrument(instrumentName, preset, bank) {
-		soundfontListGenerator += `ECHO sf${soundfontIndex}=%cd%\\${sfzFiles[instrumentName]} >> ${VMSConfigFile}\n`;
-		soundfontListGenerator += `ECHO sf${soundfontIndex}.enabled=1 >> ${VMSConfigFile}\n`;
-		soundfontListGenerator += `ECHO sf${soundfontIndex}.preset=${preset} >> ${VMSConfigFile}\n`;
-		soundfontListGenerator += `ECHO sf${soundfontIndex}.bank=${bank} >> ${VMSConfigFile}\n`;
+		soundfontList += `sf${soundfontIndex}=${sfzFiles[instrumentName]}\n`;
+		soundfontList += `sf${soundfontIndex}.enabled=1\n`;
+		soundfontList += `sf${soundfontIndex}.preset=${preset}\n`;
+		soundfontList += `sf${soundfontIndex}.bank=${bank}\n`;
 
 		soundfontIndex++;
 	}
@@ -367,12 +362,9 @@ function main() {
 		}
 	})
 
-	soundfontListGenerator += `ECHO Done\n`;
-	soundfontListGenerator += `PAUSE\n`;
-
-	const fileName = 'generate_vmssf_soundfont_list.bat';
+	const fileName = 'Musician_GM_soundfonts.vmssf';
 	process.stdout.write(`${soundfontsDir}/${fileName}\n`);
-	fs.writeFileSync(`${soundfontsDir}/${fileName}`, soundfontListGenerator);
+	fs.writeFileSync(`${soundfontsDir}/${fileName}`, soundfontList);
 }
 
 main();
