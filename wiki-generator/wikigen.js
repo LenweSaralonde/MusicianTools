@@ -276,7 +276,8 @@ function getDocs(directory, wikiDirectory) {
     fs.writeFileSync(`${wikiDirectory}/API-Worker.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Worker.lua`)));
 	fs.writeFileSync(`${wikiDirectory}/API-Utility-functions.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Utils.lua`)));
 
-    fs.writeFileSync(`${wikiDirectory}/API-Song.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Song.lua`)));
+	fs.writeFileSync(`${wikiDirectory}/API-Song.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.Song.lua`)));
+    fs.writeFileSync(`${wikiDirectory}/API-SongLinks.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.SongLinks.lua`)));
 	fs.writeFileSync(`${wikiDirectory}/API-VolumeMeter.md`, getFunctionsDoc(parseLua(`${directory}/core/Musician.VolumeMeter.lua`)));
 
     fs.writeFileSync(`${wikiDirectory}/API-Events.md`, getEventsDoc(parseLua(`${directory}/constants/Musician.Constants.lua`)));
