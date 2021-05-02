@@ -10,8 +10,6 @@
 
 /////////////////////////////////////////////////////////////////////////////////
 
-const ADDONS = ['Musician', 'MusicianList', 'MusicianMIDI'];
-
 const LOCALES = [
 	{ id: 'en', name: 'English', codes: ['enUS', 'enGB'] },
 	{ id: 'es', name: 'Español', codes: ['esMX', 'esES'] },
