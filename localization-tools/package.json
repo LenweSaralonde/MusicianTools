@@ -1,0 +1,12 @@
+{
+  "name": "localization-tools",
+  "version": "1.0.0",
+  "description": "Localization tools for Musician and its plugins",
+  "main": "refresh-locales.js",
+  "scripts": {
+    "install": "cp -n ./curseforge-config.example.json ./curseforge-config.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "LenweSaralonde",
+  "license": "GNU GPLv3"
+}
