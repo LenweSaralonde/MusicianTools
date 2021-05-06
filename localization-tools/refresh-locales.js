@@ -9,6 +9,7 @@
 'use strict'
 
 const fs = require('fs');
+const os = require('os');
 const {
 	LOCALES,
 	SOURCE_LOCALE,
@@ -34,18 +35,20 @@ function refreshLocales(addonPath) {
 
 	// Refresh locale.xml
 
-	let xml = `<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">\n`;
-	xml += `\t<!-- Base localization -->\n`;
-	xml += `\t<Script file="${addonName}.base.lua" />\n`;
-	xml += `\t<Script file="${addonName}.${SOURCE_LOCALE}.lua" />\n`;
-	xml += `\t<!-- Additional localization -->\n`;
+	const xml = [];
+	xml.push(`<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">`);
+	xml.push(`\t<!-- Base localization -->`);
+	xml.push(`\t<Script file="${addonName}.base.lua" />`);
+	xml.push(`\t<Script file="${addonName}.${SOURCE_LOCALE}.lua" />`);
+	xml.push(`\t<!-- Additional localization -->`);
 	for (let locale of LOCALES) {
 		if (locale.id !== SOURCE_LOCALE) {
-			xml += `\t<Script file="${addonName}.${locale.id}.lua" />\n`;
+			xml.push(`\t<Script file="${addonName}.${locale.id}.lua" />`);
 		}
 	}
-	xml += `</Ui>\n`;
-	fs.writeFileSync(`${addonPath}/locale/locale.xml`, xml, 'utf8');
+	xml.push(`</Ui>`);
+	xml.push(``);
+	fs.writeFileSync(`${addonPath}/locale/locale.xml`, xml.join(os.EOL), 'utf8');
 }
 
 /**

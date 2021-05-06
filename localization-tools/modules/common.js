@@ -1,6 +1,7 @@
 'use strict'
 
 const fs = require('fs');
+const os = require('os');
 
 const LOCALES = [
 	{ id: 'en', name: 'English', codes: ['enUS', 'enGB'] },
@@ -142,7 +143,7 @@ function refreshLocaleFile(addonPath, addonName, locale, sourceLocaleParsedFile,
 			default:
 		}
 	}
-	fs.writeFileSync(filename, rows.join('\n'), 'utf8');
+	fs.writeFileSync(filename, rows.join(os.EOL), 'utf8');
 }
 
 /**
