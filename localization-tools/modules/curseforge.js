@@ -109,6 +109,7 @@ async function exportLanguageToCurseforge(language, projectID, lua) {
 
 	return new Promise((resolve, reject) => {
 		const req = https.request(options, (res) => {
+			res.setEncoding('utf8');
 			let data = '';
 			res.on('data', d => data += d);
 			res.on('end', () => {
@@ -162,6 +163,7 @@ async function importLanguageFromCurseforge(language, projectID) {
 
 	return new Promise((resolve, reject) => {
 		const req = https.request(options, (res) => {
+			res.setEncoding('utf8');
 			let data = '';
 			res.on('data', d => data += d);
 			res.on('end', () => {
