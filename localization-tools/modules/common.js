@@ -11,8 +11,9 @@ const LOCALES = [
 	{ id: 'de', name: 'Deutsch', codes: ['deDE'] },
 	{ id: 'it', name: 'Italiano', codes: ['itIT'] },
 	{ id: 'ru', name: 'Русский', codes: ['ruRU'] },
-	{ id: 'kr', name: '한국어', codes: ['koKR'] },
-	{ id: 'zh', name: '中文', codes: ['zhCN', 'zhTW'] },
+	{ id: 'ko', name: '한국어', codes: ['koKR'] },
+	{ id: 'zh', name: '中文', codes: ['zhCN'] },
+	{ id: 'tw', name: '繁體中文', codes: ['zhTW'] },
 ];
 
 const SOURCE_LOCALE = 'en';
