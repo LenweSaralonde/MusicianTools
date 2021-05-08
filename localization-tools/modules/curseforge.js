@@ -63,14 +63,13 @@ function formatMessageKey(key, keyReplacements = {}) {
  * Export project LUA translations to Curseforge
  * @param {string} addonPath
  * @param {string} projectID
+ * @param {string} [language]
  */
-async function exportLocalesToCurseforge(addonPath, projectID) {
+async function exportLocaleToCurseforge(addonPath, projectID, language = CURSEFORGE_SOURCE_LANGUAGE) {
 	const keyReplacements = extractMidiKeyReplacements(addonPath);
-	for (let language of CURSEFORGE_LANGUAGES) {
-		process.stdout.write(`Exporting ${language} to CurseForge...\n`);
-		const lua = getLuaForCurseforgeExport(addonPath, language, keyReplacements);
-		await exportLanguageToCurseforge(language, projectID, lua);
-	}
+	process.stdout.write(`Exporting ${language} to CurseForge...\n`);
+	const lua = getLuaForCurseforgeExport(addonPath, language, keyReplacements);
+	await exportLanguageToCurseforge(language, projectID, lua);
 }
 
 /**
@@ -251,6 +250,6 @@ function updateLuaFromCurseforgeImport(curseforgeTranslations, addonPath, langua
 
 
 module.exports = {
-	exportLocalesToCurseforge,
+	exportLocaleToCurseforge,
 	importLocalesFromCurseforge
 }
