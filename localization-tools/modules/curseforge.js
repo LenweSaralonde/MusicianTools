@@ -18,7 +18,7 @@ const {
 	refreshLocaleFile
 } = require('./common');
 
-const CURSEFORGE_LANGUAGES = ['enUS', 'esES', 'frFR', 'ptBR', 'deDE', 'itIT', 'ruRU', 'koKR', 'zhCN'];
+const CURSEFORGE_LANGUAGES = ['enUS', 'esES', 'frFR', 'ptBR', 'deDE', 'itIT', 'ruRU', 'koKR', 'zhCN', 'zhTW'];
 const CURSEFORGE_SOURCE_LANGUAGE = 'enUS';
 
 /**
