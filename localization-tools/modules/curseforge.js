@@ -250,6 +250,7 @@ function updateLuaFromCurseforgeImport(curseforgeTranslations, addonPath, langua
 
 
 module.exports = {
+	CURSEFORGE_LANGUAGES,
 	exportLocaleToCurseforge,
 	importLocalesFromCurseforge
 }

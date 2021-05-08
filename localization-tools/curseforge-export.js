@@ -8,7 +8,7 @@
 
 'use strict'
 
-const { exportLocaleToCurseforge } = require('./modules/curseforge');
+const { exportLocaleToCurseforge, CURSEFORGE_LANGUAGES } = require('./modules/curseforge');
 
 /**
  * Main function
@@ -27,7 +27,13 @@ async function main() {
 			throw `Missing CurseForge project ID.`;
 		}
 
-		await exportLocaleToCurseforge(addonPath, projectId, languageCode);
+		if (languageCode === 'ALL') {
+			for (const language of CURSEFORGE_LANGUAGES) {
+				await exportLocaleToCurseforge(addonPath, projectId, language);
+			}
+		} else {
+			await exportLocaleToCurseforge(addonPath, projectId, languageCode);
+		}
 	} catch (e) {
 		process.stderr.write(`An error occurred: ${e}`);
 	}
