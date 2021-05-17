@@ -231,7 +231,6 @@ function getLuaForCurseforgeExport(addonPath, language = CURSEFORGE_SOURCE_LANGU
  * @returns {string}
  */
 function updateLuaFromCurseforgeImport(curseforgeTranslations, addonPath, language = CURSEFORGE_SOURCE_LANGUAGE, keyReplacements = {}) {
-	const localeId = language.replace(/[A-Z]+/, '');
 	const keyFormatter = key => formatMessageKey(key, keyReplacements);
 
 	// Extract addon name from path
@@ -242,7 +241,7 @@ function updateLuaFromCurseforgeImport(curseforgeTranslations, addonPath, langua
 
 	// Refresh translation file
 	for (let locale of LOCALES) {
-		if (locale.id === localeId) {
+		if (locale.codes.includes(language)) {
 			refreshLocaleFile(addonPath, addonName, locale, sourceLocaleParsedFile, curseforgeTranslations, keyFormatter);
 		}
 	}
