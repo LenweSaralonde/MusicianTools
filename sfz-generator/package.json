@@ -11,6 +11,8 @@
   "dependencies": {
     "lodash": "^4.17.15",
     "luaparse": "^0.3.0",
-    "minimist": "^1.2.5"
+    "minimist": "^1.2.5",
+    "wavefile": "^11.0.0",
+    "wavefile-parser": "^1.0.1"
   }
 }

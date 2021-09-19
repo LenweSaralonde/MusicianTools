@@ -11,13 +11,18 @@
 'use strict'
 
 const fs = require('fs');
+const os = require('os');
+const child_process = require('child_process');
 const parser = require('luaparse');
 const { isEmpty, fromPairs, map, invert } = require('lodash')
+const WaveFile = require('wavefile').WaveFile;
 
 const NOTE_NAMES = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
 const NOTE_FILENAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B'];
 const NOTE_FROM = 12; // C0
 const NOTE_TO = 108; // C8
+
+const LOOP_FIND_RANGE = 2;
 
 let INSTRUMENTS;
 let INSTRUMENTS_AVAILABLE;
@@ -27,6 +32,63 @@ let MIDI_PERCUSSIONS;
 
 let MIDI_INSTRUMENT_MAPPING;
 let MIDI_PERCUSSION_MAPPING;
+
+/**
+ * Returns midi note frequency
+ * @param {int} midiNote
+ * @returns {float}
+ */
+function getFrequency(midiNote) {
+	return 440 * Math.pow(2, (midiNote - 69) / 12);
+}
+
+/**
+ * Return the phase index near indexTo matching the phase at indexFrom
+ * @param {WaveFile} wav
+ * @param {int} indexFrom
+ * @param {int} indexTo
+ * @param {int} period in samples
+ * @return {int}
+ */
+ function findPhase(wav, indexFrom, indexTo, period) {
+	let bestIndex = indexTo;
+	let bestScore = Infinity; // Should be the lowest possible
+
+	let offset;
+	for (offset = -period; offset <= period; offset++) {
+		let score = 0;
+		let t = 0;
+		for (t = 0; t <= period; t++) {
+			const sampleA = wav.getSample((indexFrom + t) * wav.fmt.numChannels); // Reference sample
+			const sampleB = wav.getSample((indexTo + t + offset) * wav.fmt.numChannels); // Sample to compare to
+			score += Math.abs(sampleB - sampleA);
+		}
+		if (score < bestScore) {
+			bestScore = score;
+			bestIndex = indexTo + offset;
+		}
+	}
+
+	return bestIndex;
+}
+
+/**
+ * Open sample in OGG format and returns it as a wav
+ * @param {string} oggFile
+ * @return {WaveFile}
+ */
+function openSample(oggFile) {
+	const tmpFile = os.tmpdir() + 'sfz-generator-sample.wav';
+
+	const ffmpegCommand = `ffmpeg -i "${oggFile}" "${tmpFile}"`;
+	child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
+
+	const wavSource = new WaveFile();
+	wavSource.fromBuffer(fs.readFileSync(tmpFile));
+	fs.unlinkSync(tmpFile);
+
+	return wavSource;
+}
 
 /**
  * Converts parsed LUA variable into JSON
@@ -87,7 +149,6 @@ const luaAstToJson = ast => {
 
 	return ast.type
 }
-
 
 /**
  * Extract LUA constant from file
@@ -266,6 +327,12 @@ function main() {
 			paddedMidi = '128-' + ('000' + (midi - 128)).slice(-3);
 		}
 
+		// Loop end position, in seconds
+		let loop;
+		if (INSTRUMENTS[instrumentName].loop) {
+			loop = (parseFloat(INSTRUMENTS[instrumentName].loop[0]) + parseFloat(INSTRUMENTS[instrumentName].loop[1])) / 2;
+		}
+
 		let instrumentSfz = '';
 
 		instrumentSfz += `<group>\n`;
@@ -294,6 +361,31 @@ function main() {
 					// Sample round robin
 					if (!noteData.keyMod && noteData.noteFilenames.length > 1) {
 						instrumentSfz += `\n\tseq_length=${noteData.noteFilenames.length} seq_position=${index + 1}`;
+					}
+
+					// Loop
+					if (loop !== undefined) {
+						const wav = openSample(`${instrumentsDir}/${filename}`);
+						const sampleRate = wav.fmt.sampleRate;
+
+						const period = 1 / getFrequency(key);
+
+						const loopStart = Math.round(loop / 2 / period) * period;
+						const loopEnd = Math.round(loop / period) * period;
+
+						const loopStartIndex = Math.round(loopStart * sampleRate);
+						const loopEndIndex = Math.round(loopEnd * sampleRate);
+						const loopEndPhasedIndex = findPhase(wav, loopStartIndex, loopEndIndex, Math.round(LOOP_FIND_RANGE * period * sampleRate));
+
+						instrumentSfz += `\n\tloop_mode=loop_continuous`;
+						instrumentSfz += `\n\tloop_start=${loopStartIndex}`;
+						instrumentSfz += `\n\tloop_end=${loopEndPhasedIndex - 1}`;
+
+						// loop_crossfade is not yet supported
+						// const crossfade = (INSTRUMENTS[instrumentName].crossfade || 0) / 1000;
+						// if (crossfade > 0) {
+						// 	instrumentSfz += `\n\tloop_crossfade=${crossfade}`;
+						// }
 					}
 
 					instrumentSfz += `\n\n`;
