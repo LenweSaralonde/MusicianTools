@@ -224,7 +224,7 @@ function getNoteData(key, instrumentName) {
 	const note = noteId % 12;
 
 	noteData.midi = instrument.midi;
-	noteData.decay = instrument.decay;
+	noteData.decay = instrument.decayByKey && instrument.decayByKey[key] || instrument.decay;
 	noteData.isPercussion = instrument.isPercussion;
 	noteData.noteName = NOTE_NAMES[note] + octave;
 	noteData.noteLabel = NOTE_FILENAMES[note] + octave;
