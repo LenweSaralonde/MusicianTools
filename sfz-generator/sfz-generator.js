@@ -206,7 +206,7 @@ function getDisplayName(instrumentName) {
  * @return {string}
  */
 function getRelativePath(path) {
-	return path.replace(/\\/g, '/').replace(/Interface\/AddOns\/Musician\/instruments\//, '');
+	return path.replace(/\\/g, '/').replace(/Interface\/AddOns\/[^\/]+\/instruments\//, '');
 }
 
 /**
