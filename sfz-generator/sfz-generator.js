@@ -347,9 +347,14 @@ function main() {
 		instrumentSfz += `amp_velcurve_1=1 // All notes play max velocity\n`;
 		instrumentSfz += `\n`;
 
-		let key;
+		let totalLoopProgression = 0;
+		for (let key = NOTE_FROM; key <= NOTE_TO; key++) {
+			totalLoopProgression += Math.pow(1 / getFrequency(key), 2);
+		}
+
 		let sources = [];
-		for (key = NOTE_FROM; key <= NOTE_TO; key++) {
+		let currentLoopProgression = 0;
+		for (let key = NOTE_FROM; key <= NOTE_TO; key++) {
 
 			const noteData = getNoteData(key, instrumentName);
 
@@ -368,7 +373,9 @@ function main() {
 
 					// Loop
 					if (loop !== undefined) {
-						process.stdout.write(`   Calculating loop points for ${noteData.noteName.toUpperCase()}...\n`);
+						const progression = Math.floor(100 * currentLoopProgression / totalLoopProgression);
+						process.stdout.write(`   Calculating loop points for ${noteData.noteName.toUpperCase()} (${progression} %)...\n`);
+						currentLoopProgression += Math.pow(1 / getFrequency(key), 2);
 
 						const wav = openSample(`${instrumentsDir}/${filename}`);
 						const sampleRate = wav.fmt.sampleRate;
