@@ -319,6 +319,9 @@ function main() {
 		}
 
 		const displayName = getDisplayName(instrumentName);
+
+		process.stdout.write(`Creating soundfont for ${displayName}...\n`);
+
 		const midi = INSTRUMENTS[instrumentName].midi;
 		let paddedMidi = '';
 		if (midi < 128) {
@@ -365,6 +368,8 @@ function main() {
 
 					// Loop
 					if (loop !== undefined) {
+						process.stdout.write(`   Calculating loop points for ${noteData.noteName.toUpperCase()}...\n`);
+
 						const wav = openSample(`${instrumentsDir}/${filename}`);
 						const sampleRate = wav.fmt.sampleRate;
 
@@ -420,7 +425,7 @@ function main() {
 
 		// Write SFZ file
 		const fileName = `[${paddedMidi}] ${displayName}.sfz`;
-		process.stdout.write(`${soundfontsDir}/${fileName}\n`);
+		process.stdout.write(`Writing soundfont file: ${soundfontsDir}/${fileName}\n`);
 		fs.writeFileSync(`${soundfontsDir}/${fileName}`, header + instrumentSfz);
 		sfzFiles[instrumentName] = fileName;
 	});
@@ -431,11 +436,12 @@ function main() {
 	let soundfontIndex = 1;
 
 	function addSoundfontInstrument(instrumentName, preset, bank) {
-		soundfontList += `sf${soundfontIndex}=${sfzFiles[instrumentName]}\n`;
-		soundfontList += `sf${soundfontIndex}.enabled=1\n`;
-		soundfontList += `sf${soundfontIndex}.preset=${preset}\n`;
-		soundfontList += `sf${soundfontIndex}.bank=${bank}\n`;
-
+		if (sfzFiles[instrumentName]) {
+			soundfontList += `sf${soundfontIndex}=${sfzFiles[instrumentName]}\n`;
+			soundfontList += `sf${soundfontIndex}.enabled=1\n`;
+			soundfontList += `sf${soundfontIndex}.preset=${preset}\n`;
+			soundfontList += `sf${soundfontIndex}.bank=${bank}\n`;
+		}
 		soundfontIndex++;
 	}
 
@@ -455,7 +461,7 @@ function main() {
 	})
 
 	const fileName = 'Musician_GM_soundfonts.vmssf';
-	process.stdout.write(`${soundfontsDir}/${fileName}\n`);
+	process.stdout.write(`Writing VirtualMIDISynth mapping file: ${soundfontsDir}/${fileName}\n`);
 	fs.writeFileSync(`${soundfontsDir}/${fileName}`, soundfontList);
 }
 
