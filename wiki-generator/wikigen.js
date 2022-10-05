@@ -201,7 +201,7 @@ function getFunctionsDoc(module) {
 					let desc = param.desc ? (' ' + param.desc) : ''
 					let opt = param.opt ?
 						(param.optDefault ?
-							` _(default=${param.optDefault})` :
+							` _(default=${param.optDefault})_` :
 							' _(optional)_') :
 						'';
 
