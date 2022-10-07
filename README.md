@@ -12,3 +12,10 @@ Tools and sources of the [Musician](https://github.com/LenweSaralonde/Musician) 
 	* **wav2sfz**: Generate a SFZ soundfont file for a WAV sample collection.
 	* **looper**: Generate crossfaded loops within a WAV sample collection.
 * **slicer**: Splits the audio file containing all the instrument samples into normalized OGG files (Node.js, ffmpeg and ffmpeg-normalize)
+
+Requirements
+------------
+* [Node.js](https://nodejs.org/)
+* [Python 3](https://www.python.org/downloads/)
+* [ffmpeg](https://ffmpeg.org/)
+* [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
