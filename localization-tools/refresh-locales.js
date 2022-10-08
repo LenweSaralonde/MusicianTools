@@ -36,7 +36,9 @@ function refreshLocales(addonPath) {
 	// Refresh locale.xml
 
 	const xml = [];
-	xml.push(`<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">`);
+	xml.push(`<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"`);
+	xml.push(`\txmlns:xsd="http://www.w3.org/2001/XMLSchema"`);
+	xml.push(`\txmlns="http://www.blizzard.com/wow/ui/">`);
 	xml.push(`\t<!-- Base localization -->`);
 	xml.push(`\t<Script file="${addonName}.base.lua" />`);
 	xml.push(`\t<Script file="${addonName}.${SOURCE_LOCALE}.lua" />`);
