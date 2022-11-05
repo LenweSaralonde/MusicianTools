@@ -12,6 +12,7 @@
  *    -l <normalize level> : Normalization level in dB (default: 0)
  *    -n {rms|peak} : Normalization type (default: peak)
  *    -d {duration} : Note sample duration in seconds (default: 6)
+ *    -t {true|false} : Trim audio at end (default: false)
  *    --from <note from> : Note from (default: C0)
  *    --to <note to> : Note to (default: C8)
  *    --format <format> : Output file format (default: ogg)
@@ -53,6 +54,7 @@ function main() {
 	let SLICE_FORMAT = argv.format || 'ogg';
 	let NORMALIZE_LEVEL = argv.l;
 	let NORMALIZE_TYPE = argv.n;
+	let TRIM = argv.t;
 
 	const notesFromMatches = NOTES_FROM.match(/([A-Z#]+)([0-9-]+)/);
 
@@ -87,8 +89,15 @@ function main() {
 		}
 
 		// Encode sample and adjust level if needed
-		const volumeCommand = level ? `-filter:a "volume=${level}dB"`:'';
-		ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${volumeCommand} ${FFMPEG_PARAMS} "${outputFile}"`;
+		const filters = [];
+		if (level !== null) {
+			filters.push(`volume=${level}dB`);
+		}
+		if (TRIM) {
+			filters.push(`silenceremove=stop_periods=-1:stop_duration=0.05:stop_threshold=-96dB`);
+		}
+		const filterCommand = (filters.length > 0) ? `-af ${filters.join(',')}` : '';
+		ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${filterCommand} ${FFMPEG_PARAMS} "${outputFile}"`;
 		const levelDisplay = level ? ('(' + (level > 0 ? '+' : '') + new Intl.NumberFormat('en-US').format(level) + 'dB)') : '';
 		process.stdout.write(`Encoding ${outputFile} ${levelDisplay}\n`);
 		out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
