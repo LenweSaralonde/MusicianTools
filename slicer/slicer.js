@@ -77,36 +77,46 @@ function main() {
 		ffmpegCommand = `ffmpeg -i "${slicesFile}" -y -ss ${fileIndex * NOTE_DURATION} -t ${NOTE_DURATION} __chunk__.wav`;
 		out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
 
-		let level = 0;
-
-		// Normalize sample
-		if (NORMALIZE_TYPE) {
-			// Measure level to adjust
-			ffmpegCommand = `ffmpeg-normalize __chunk__.wav -n -v -f -nt ${NORMALIZE_TYPE} -t ${NORMALIZE_LEVEL}`;
-			out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
-			const levelMatch = out.match(/INFO: Adjusting stream .+ by (.*) dB to reach/);
-			level = levelMatch && (levelMatch[1] * 1);
-		}
-
-		// Encode sample and adjust level if needed
-		const filters = [];
-		if (level !== null) {
-			filters.push(`volume=${level}dB`);
-		}
-		if (TRIM) {
-			filters.push(`silenceremove=stop_periods=-1:stop_duration=0.05:stop_threshold=-96dB`);
-		}
-		const filterCommand = (filters.length > 0) ? `-af ${filters.join(',')}` : '';
-		ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${filterCommand} ${FFMPEG_PARAMS} "${outputFile}"`;
-		const levelDisplay = level ? ('(' + (level > 0 ? '+' : '') + new Intl.NumberFormat('en-US').format(level) + 'dB)') : '';
-		process.stdout.write(`Encoding ${outputFile} ${levelDisplay}\n`);
+		// Get peak level
+		ffmpegCommand = `ffmpeg -i __chunk__.wav -af asetnsamples=${44100 * NOTE_DURATION},astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level -f null -`;
 		out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
+		const overall = out.match(/\] Overall([\s\S]+)$/gm);
+		const peak = overall[0].match(/Peak level dB: (.+)/)[1];
 
-		try {
-			fs.unlinkSync('__chunk__.wav');
-		} catch (e) {}
+		if (peak !== '-inf') {
+			let level = 0;
 
-		outputFiles.push(outputFile);
+			// Normalize sample
+			if (NORMALIZE_TYPE) {
+				// Measure level to adjust
+				ffmpegCommand = `ffmpeg-normalize __chunk__.wav -n -v -f -nt ${NORMALIZE_TYPE} -t ${NORMALIZE_LEVEL}`;
+				out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
+				const levelMatch = out.match(/INFO: Adjusting stream .+ by (.*) dB to reach/);
+				level = levelMatch && (levelMatch[1] * 1);
+			}
+
+			// Encode sample and adjust level if needed
+			const filters = [];
+			if (level !== 0) {
+				filters.push(`volume=${level}dB`);
+			}
+			if (TRIM) {
+				filters.push(`silenceremove=stop_periods=-1:stop_duration=0.05:stop_threshold=-96dB`);
+			}
+			const filterCommand = (filters.length > 0) ? `-af ${filters.join(',')}` : '';
+			ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${filterCommand} ${FFMPEG_PARAMS} "${outputFile}"`;
+			const levelDisplay = level ? ('(' + (level > 0 ? '+' : '') + new Intl.NumberFormat('en-US').format(level) + 'dB)') : '';
+			process.stdout.write(`Encoding ${outputFile} ${levelDisplay}\n`);
+			out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
+
+			try {
+				fs.unlinkSync('__chunk__.wav');
+			} catch (e) {}
+
+			outputFiles.push(outputFile);
+		} else {
+			process.stdout.write(`Skipping ${outputFile} (empty)\n`);
+		}
 
 		fileIndex++;
 		noteIndex++;
