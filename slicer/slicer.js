@@ -83,7 +83,7 @@ function main() {
 		const overall = out.match(/\] Overall([\s\S]+)$/gm);
 		const peak = overall[0].match(/Peak level dB: (.+)/)[1];
 
-		if (peak !== '-inf') {
+		if (peak !== '-inf' && peak > -90) {
 			let level = 0;
 
 			// Normalize sample
@@ -97,7 +97,7 @@ function main() {
 
 			// Encode sample and adjust level if needed
 			const filters = [];
-			if (level !== 0) {
+			if (NORMALIZE_TYPE && level !== 0) {
 				filters.push(`volume=${level}dB`);
 			}
 			if (TRIM) {
@@ -109,14 +109,14 @@ function main() {
 			process.stdout.write(`Encoding ${outputFile} ${levelDisplay}\n`);
 			out = child_process.spawnSync(ffmpegCommand, [], { shell: true }).output.toString();
 
-			try {
-				fs.unlinkSync('__chunk__.wav');
-			} catch (e) {}
-
 			outputFiles.push(outputFile);
 		} else {
 			process.stdout.write(`Skipping ${outputFile} (empty)\n`);
 		}
+
+		try {
+			fs.unlinkSync('__chunk__.wav');
+		} catch (e) {}
 
 		fileIndex++;
 		noteIndex++;
