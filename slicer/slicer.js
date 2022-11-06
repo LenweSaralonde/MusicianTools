@@ -83,7 +83,7 @@ function main() {
 		const overall = out.match(/\] Overall([\s\S]+)$/gm);
 		const peak = overall[0].match(/Peak level dB: (.+)/)[1];
 
-		if (peak !== '-inf' && peak > -90) {
+		if (peak !== '-inf' && peak > -50) {
 			let level = 0;
 
 			// Normalize sample
@@ -101,7 +101,7 @@ function main() {
 				filters.push(`volume=${level}dB`);
 			}
 			if (TRIM) {
-				filters.push(`silenceremove=stop_periods=-1:stop_duration=0.05:stop_threshold=-96dB`);
+				filters.push(`silenceremove=stop_periods=-1:stop_duration=0.05:stop_threshold=-65dB`);
 			}
 			const filterCommand = (filters.length > 0) ? `-af ${filters.join(',')}` : '';
 			ffmpegCommand = `ffmpeg -i __chunk__.wav -y ${filterCommand} ${FFMPEG_PARAMS} "${outputFile}"`;
