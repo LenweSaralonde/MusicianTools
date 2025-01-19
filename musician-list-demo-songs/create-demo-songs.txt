@@ -26,7 +26,7 @@ How to create demo songs that won't be fucked by the CurseForge packager
 			MusicianList_Storage.demoSongs[id] = song
 		end
 	end
-	
+
 	MusicianList.ConvertDemoSongs()
 
 3. Reload UI
@@ -35,3 +35,6 @@ How to create demo songs that won't be fucked by the CurseForge packager
 6. Run
 	/run MusicianList_Storage.demoSongs = nil
 	/reload
+
+Rename track:
+/run Musician.sourceSong.tracks[n].name = 'New Name'
