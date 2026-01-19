@@ -1,7 +1,7 @@
 .settings
 .buildpath
 .project
-/.DS_Store
+.DS_Store
 curseforge-config.json
 node_modules
 package-lock.json
