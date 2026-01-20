@@ -38,3 +38,4 @@ Audience
 * Aranict-ArgentDawn
 * Jaédyth-ArgentDawn
 * Kathreen-ArgentDawn
+* Lothsoran-ArgentDawn
